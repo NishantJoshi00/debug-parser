@@ -2,7 +2,6 @@
 
 mod string;
 use nom::error::ErrorKind;
-use serde_json;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
@@ -35,7 +34,7 @@ where
 {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         match self {
-            DataModel::Null => ().hash(state),
+            DataModel::Null => 0_u8.hash(state),
             DataModel::Boolean(data) => data.hash(state),
             DataModel::Float(_data) => {}
             DataModel::String(data) => data.hash(state),
@@ -66,7 +65,7 @@ where
     <&'a str as nom::InputTakeAtPosition>::Item: nom::AsChar,
 {
     input.split_at_position1_complete(
-        |item| !(item.is_digit(10) || item == '.'),
+        |item| !(item.is_ascii_digit() || item == '.'),
         nom::error::ErrorKind::AlphaNumeric,
     )
 }
@@ -130,7 +129,7 @@ fn parse_datetime<
             |x| {
                 let mut string = String::new();
                 string.push_str(&x.0.join("-"));
-                string.push_str(" ");
+                string.push(' ');
                 string.push_str(&x.1.join(":"));
                 string
             },
@@ -488,7 +487,7 @@ mod tests {
     fn test_boolean() {
         let data = "true";
         let value = parse_bool::<(&str, ErrorKind)>(data).unwrap();
-        assert_eq!(value.1, true, "residue: {}", value.0)
+        assert!(value.1, "residue: {}", value.0)
     }
 
     #[test]
@@ -769,7 +768,7 @@ mod tests {
     fn test_payment_request() {
         let data = r#"PaymentsRequest { payment_id: None, merchant_id: None, amount: Some(Value(6500)), routing: None, connector: None, currency: Some(USD), capture_method: Some(Automatic), amount_to_capture: None, capture_on: None, confirm: Some(false), customer: None, customer_id: Some("hyperswitch111"), email: Some(Email(*********@gmail.com)), name: None, phone: None, phone_country_code: None, off_session: None, description: Some("Hello this is description"), return_url: None, setup_future_usage: None, authentication_type: Some(ThreeDs), payment_method_data: None, payment_method: None, payment_token: None, card_cvc: None, shipping: Some(Address { address: Some(AddressDetails { city: Some("Banglore"), country: Some(US), line1: Some(*** alloc::string::String ***), line2: Some(*** alloc::string::String ***), line3: Some(*** alloc::string::String ***), zip: Some(*** alloc::string::String ***), state: Some(*** alloc::string::String ***), first_name: Some(*** alloc::string::String ***), last_name: None }), phone: Some(PhoneDetails { number: Some(*** alloc::string::String ***), country_code: Some("+1") }) }), billing: Some(Address { address: Some(AddressDetails { city: Some("San Fransico"), country: Some(AT), line1: Some(*** alloc::string::String ***), line2: Some(*** alloc::string::String ***), line3: Some(*** alloc::string::String ***), zip: Some(*** alloc::string::String ***), state: Some(*** alloc::string::String ***), first_name: Some(*** alloc::string::String ***), last_name: Some(*** alloc::string::String ***) }), phone: Some(PhoneDetails { number: Some(*** alloc::string::String ***), country_code: Some("+91") }) }), statement_descriptor_name: None, statement_descriptor_suffix: None, metadata: Some(Metadata { order_details: Some(OrderDetails { product_name: "gillete razor", quantity: 1 }), order_category: None, redirect_response: None, allowed_payment_method_types: None }), order_details: None, client_secret: None, mandate_data: None, mandate_id: None, browser_info: None, payment_experience: None, payment_method_type: None, business_country: Some(US), business_label: Some("default"), merchant_connector_details: None, allowed_payment_method_types: None, business_sub_label: None, manual_retry: false, udf: None }"#;
 
-        let data_model = root::<(&str, ErrorKind)>(&data).unwrap().1;
+        let data_model = root::<(&str, ErrorKind)>(data).unwrap().1;
 
         panic!("{:?}", data_model);
     }
@@ -786,7 +785,7 @@ mod tests {
     #[ignore = "It's panicable"]
     fn test_parse_date_response() {
         let data = "PaymentsResponse { created: Some(2023-06-06 12:30:30.351996)}";
-        let parse = root::<(&str, ErrorKind)>(&data).unwrap().1;
+        let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
         panic!("{:#?}", parse)
     }
 }
