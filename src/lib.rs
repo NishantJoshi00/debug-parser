@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
 mod string;
+use nom::error::ErrorKind;
+use serde_json;
 use std::collections::HashMap;
+use wasm_bindgen::prelude::*;
 
 use nom::{
     branch::alt,
@@ -347,6 +350,11 @@ pub fn data_model<
         )),
     )
     .parse(i)
+}
+
+#[wasm_bindgen(js_name=parse)]
+pub fn my_parse(val: String) -> String {
+    serde_json::to_string(&root::<(&str, ErrorKind)>(&val).unwrap().1).unwrap()
 }
 
 pub fn root<
