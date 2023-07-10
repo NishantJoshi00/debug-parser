@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 mod string;
-use nom::error::ErrorKind;
+use nom::{combinator::fail, error::ErrorKind};
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
@@ -139,7 +139,18 @@ fn parse_datetime<
 }
 
 fn parse_float<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, f64, E> {
-    double(input)
+   
+    let data = double(input);
+    // let data = map_opt(num_checker, |value| { // This is a optional rudimentary float parser 
+    //     eprintln!("parsing: {}", value);
+    //     value.parse::<f64>().ok()
+    // })
+    // .parse(input);
+
+    match data {
+        Ok((rest, _)) if rest.starts_with('*') => fail(input),
+        _ => data,
+    }
 }
 
 fn parse_array<
@@ -787,5 +798,13 @@ mod tests {
         let data = "PaymentsResponse { created: Some(2023-06-06 12:30:30.351996)}";
         let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
         panic!("{:#?}", parse)
+    }
+
+    #[test]
+    fn regression_test_1() {
+        let data = r#"PaymentsRequest { payment_method_data: Some(Card(Card { card_number: CardNumber(424242**********), card_exp_month: *** alloc::string::String ***, card_exp_year: *** alloc::string::String ***, card_holder_name: *** alloc::string::String ***, card_cvc: *** alloc::string::String ***, card_issuer: None, card_network: None })), payment_method: Some(Card), payment_token: None, card_cvc: None, shipping: Some(Address { address: Some(AddressDetails { city: Some("San Fransico"), country: Some(US), line1: Some(*** alloc::string::String ***), line2: Some(*** alloc::string::String ***), line3: Some(*** alloc::string::String ***), zip: Some(*** alloc::string::String ***), state: Some(*** alloc::string::String ***), first_name: Some(*** alloc::string::String ***), last_name: Some(*** alloc::string::String ***) }), phone: Some(PhoneDetails { number: Some(*** alloc::string::String ***), country_code: Some("+91") }) }), billing: Some(Address { address: Some(AddressDetails { city: Some("San Fransico"), country: Some(US), line1: Some(*** alloc::string::String ***), line2: Some(*** alloc::string::String ***), line3: Some(*** alloc::string::String ***), zip: Some(*** alloc::string::String ***), state: Some(*** alloc::string::String ***), first_name: Some(*** alloc::string::String ***), last_name: Some(*** alloc::string::String ***) }), phone: Some(PhoneDetails { number: Some(*** alloc::string::String ***), country_code: Some("+91") }) }), statement_descriptor_name: Some("joseph"), statement_descriptor_suffix: Some("JS"), metadata: Some(Metadata { order_details: None, order_category: None, redirect_response: None, allowed_payment_method_types: None }), order_details: None, client_secret: None, mandate_data: None, mandate_id: None, browser_info: None, payment_experience: None, payment_method_type: Some(Credit), business_country: None, business_label: None, merchant_connector_details: None, allowed_payment_method_types: None, business_sub_label: None, manual_retry: false, udf: None }"#;
+
+        let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
+        panic!("{:#?}", parse);
     }
 }
