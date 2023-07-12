@@ -1,7 +1,11 @@
 [package]
-name = "debug-parser"
+name = "ron-parser"
 version = "0.1.0"
 edition = "2021"
+description = "Parsing debug implementation from rust object to JSON"
+license = "MIT"
+repository = "https://github.com/NishantJoshi00/debug-parser"
+exclude = ["/pkg", "/.github"]
 
 [lib]
 crate-type = ["cdylib"]
@@ -17,7 +21,7 @@ wasm-bindgen = { version = "0.2.86" }
 [dev-dependencies]
 serde = { version = "1.0.164", features = [ "derive" ]}
 serde_json = "1.0.96"
-criterion = "0.3"
+criterion = "0.5"
 
 [[bench]]
 name = "worktable"

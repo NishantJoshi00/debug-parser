@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![deny(clippy::unwrap_used)]
 
 mod string;
 use nom::{combinator::fail, error::ErrorKind};
@@ -17,6 +18,10 @@ use nom::{
     AsChar, IResult, InputTakeAtPosition, Parser,
 };
 
+///
+/// [`DataModel`] is used to perform ron object conversion it is the intermediate representation
+/// for the parser.
+///
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 #[serde(untagged)]
 pub enum DataModel<'a> {
@@ -332,6 +337,9 @@ fn parse_wildcard<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'
     escaped(char_checker_wc, '\\', one_of("\"n\\"))(i)
 }
 
+///
+/// Parse string into [`DataModel`] using this function.
+///
 pub fn data_model<
     'a,
     E: ParseError<&'a str>
@@ -361,11 +369,19 @@ pub fn data_model<
     .parse(i)
 }
 
+///
+/// Function exposed as `wasm` function in js `parse`. Allowing use to extend the functionality and
+/// usage for web
+///
 #[wasm_bindgen(js_name=parse)]
 pub fn my_parse(val: String) -> String {
     serde_json::to_string(&root::<(&str, ErrorKind)>(&val).unwrap().1).unwrap()
 }
 
+///
+/// The entrypoint to the crate this is internally calling [`data_model`] with a relaxed
+/// constraints of space padding on the start and the end
+///
 pub fn root<
     'a,
     E: ParseError<&'a str>
@@ -380,6 +396,7 @@ pub fn root<
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
 
     use nom::error::ErrorKind;
 
