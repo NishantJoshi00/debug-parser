@@ -1,6 +1,6 @@
 [package]
 name = "ron-parser"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Parsing debug implementation from rust object to JSON"
 license = "MIT"
@@ -8,7 +8,7 @@ repository = "https://github.com/NishantJoshi00/debug-parser"
 exclude = ["/pkg", "/.github"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
