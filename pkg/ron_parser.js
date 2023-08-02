@@ -82,6 +82,9 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 /**
+*
+* Function exposed as `wasm` function in js `parse`. Allowing use to extend the functionality and
+* usage for web
 * @param {string} val
 * @returns {string}
 */
@@ -176,7 +179,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('debug_parser_bg.wasm', import.meta.url);
+        input = new URL('ron_parser_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 

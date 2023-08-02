@@ -1,6 +1,6 @@
 [package]
 name = "ron-parser"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Parsing debug implementation from rust object to JSON"
 license = "MIT"
