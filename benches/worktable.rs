@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use debug_impl_parser::root;
+use ron_parser::root;
 use nom::error::ErrorKind;
 
 #[derive(Debug)]
