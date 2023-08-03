@@ -98,18 +98,3 @@ where
 
     delimited(char('"'), build_string, char('"')).parse(input)
 }
-
-pub fn parse_str<'a, E>(input: &'a str) -> IResult<&'a str, String, E>
-where
-    E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
-{
-    fold_many0(parse_fragment, String::new, |mut string, fragment| {
-        match fragment {
-            StringFragment::Literal(s) => string.push_str(s),
-            StringFragment::EscapedChar(c) => string.push(c),
-            StringFragment::EscapedWS => {}
-        }
-        string
-    })
-    .parse(input)
-}

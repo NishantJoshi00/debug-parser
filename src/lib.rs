@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 #![deny(clippy::unwrap_used)]
 
 mod string;
@@ -25,9 +24,9 @@ use nom::{
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 #[serde(untagged)]
 pub enum DataModel<'a> {
-    Null,           // ✅
-    Boolean(bool),  // ✅
-    Float(f64),     // ✅
+    Null,                                 // ✅
+    Boolean(bool),                        // ✅
+    Float(f64),                           // ✅
     String(Cow<'a, str>),                 // ✅
     Map(HashMap<&'a str, DataModel<'a>>), // ✅
     Vec(Vec<DataModel<'a>>),              // ✅
@@ -105,6 +104,7 @@ fn parse_string<'a, E: ParseError<&'a str> + ContextError<&'a str> + std::fmt::D
     )(input)
 }
 
+#[allow(dead_code)]
 fn parse_integer<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, isize, E> {
     let (number, data) = opt(char('-'))(input)?;
     digit1(number).and_then(|(rest, doq)| match (doq.parse::<isize>(), data.is_some()) {
@@ -398,7 +398,12 @@ pub fn data_model<
 ///
 #[wasm_bindgen(js_name=parse)]
 pub fn my_parse(val: String) -> String {
-    serde_json::to_string(&root::<(&str, ErrorKind)>(&val).unwrap().1).unwrap()
+    serde_json::to_string(
+        &root::<(&str, ErrorKind)>(&val)
+            .expect("Failed to parse the ron object")
+            .1,
+    )
+    .expect("Failed to serialize to json")
 }
 
 ///
@@ -420,6 +425,7 @@ pub fn root<
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used)]
+    #![allow(dead_code)]
 
     use nom::error::ErrorKind;
 
@@ -521,16 +527,14 @@ mod tests {
     #[test]
     fn test_null() {
         let data = "None";
-        let value = parse_null::<(&str, ErrorKind)>(data).unwrap();
-        assert_eq!(value.1, (), "residue {}", value.0)
+        let _value = parse_null::<(&str, ErrorKind)>(data).unwrap();
     }
 
     #[test]
     #[should_panic]
     fn test_not_null() {
         let data = "123";
-        let value = parse_null::<(&str, ErrorKind)>(data).unwrap();
-        assert_eq!(value.1, (), "residue {}", value.0)
+        let _value = parse_null::<(&str, ErrorKind)>(data).unwrap();
     }
 
     #[test]

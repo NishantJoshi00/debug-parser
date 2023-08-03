@@ -1,8 +1,10 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use ron_parser::root;
 use nom::error::ErrorKind;
+use ron_parser::root;
 
 #[derive(Debug)]
 struct Everything {
@@ -104,7 +106,7 @@ fn bench_parse_and_serialize(c: &mut Criterion) {
     c.bench_function("bench_parse_and_serialize", |b| {
         b.iter(|| {
             let value = format!("{:?}", black_box(&data));
-            let parsed = black_box(root::<(&str, ErrorKind)>(&value).unwrap().1);
+            let _parsed = black_box(root::<(&str, ErrorKind)>(&value).unwrap().1);
         })
     });
 }
@@ -114,7 +116,7 @@ fn bench_payment_request(c: &mut Criterion) {
 
     c.bench_function("bench_payment_request", |b| {
         b.iter(|| {
-            let parsed = black_box(root::<(&str, ErrorKind)>(&data).unwrap().1);
+            let _parsed = black_box(root::<(&str, ErrorKind)>(data).unwrap().1);
         })
     });
 }
