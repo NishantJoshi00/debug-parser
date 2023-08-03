@@ -328,7 +328,7 @@ where
     <&'a str as nom::InputTakeAtPosition>::Item: nom::AsChar,
 {
     input.split_at_position1_complete(
-        |item| item == ',' || item == '}' || item == ')',
+        |item| item == ',' || item == '}' || item == ')' || item == ']',
         nom::error::ErrorKind::AlphaNumeric,
     )
 }
@@ -366,7 +366,6 @@ pub fn data_model<
 >(
     i: &'a str,
 ) -> IResult<&'a str, DataModel<'a>, E> {
-    //
     preceded(
         spacer,
         alt((
@@ -837,6 +836,13 @@ mod tests {
     fn regression_test_1() {
         let data = r#"PaymentsRequest { payment_id: Some(PaymentIntentId("pay_nLjAOteAucUEv29qLv01")), merchant_id: None, amount: None, routing: None, connector: None, currency: None, capture_method: None, amount_to_capture: None, capture_on: None, confirm: Some(true), customer: None, customer_id: None, email: None, name: None, phone: None, phone_country_code: None, off_session: None, description: None, return_url: Some(Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("app.hyperswitch.io")), port: None, path: "/home", query: None, fragment: None }), setup_future_usage: None, authentication_type: None, payment_method_data: Some(Card(Card { card_number: CardNumber(424242**********), card_exp_month: *** alloc::string::String ***, card_exp_year: *** alloc::string::String ***, card_holder_name: *** alloc::string::String ***, card_cvc: *** alloc::string::String ***, card_issuer: Some(""), card_network: Some(Visa) })), payment_method: Some(Card), payment_token: None, card_cvc: None, shipping: None, billing: None, statement_descriptor_name: None, statement_descriptor_suffix: None, metadata: None, order_details: None, client_secret: Some("pay_nLjAOteAucUEv29qLv01_secret_9M2BQVnMPskkdYGitWNJ"), mandate_data: None, mandate_id: None, browser_info: Some(Object {"color_depth": Number(30), "java_enabled": Bool(true), "java_script_enabled": Bool(true), "language": String("en-GB"), "screen_height": Number(1117), "screen_width": Number(1728), "time_zone": Number(-330), "ip_address": String("65.1.52.128"), "accept_header": String("text\\/html,application\\/xhtml+xml,application\\/xml;q=0.9,image\\/webp,image\\/apng,*\\/*;q=0.8"), "user_agent": String("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")}), payment_experience: None, payment_method_type: None, business_country: None, business_label: None, merchant_connector_details: None, allowed_payment_method_types: None, business_sub_label: None, manual_retry: false, udf: None }"#;
 
+        let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
+        panic!("{:#?}", parse);
+    }
+
+    #[test]
+    fn test_empty_brackets() {
+        let data = "PaymentsRequest { payment_methods: [] }";
         let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
         panic!("{:#?}", parse);
     }
