@@ -312,6 +312,26 @@ fn parse_struct<
     Ok((value.0, value.1 .1))
 }
 
+
+fn parse_named_array<
+    'a,
+    E: ParseError<&'a str>
+        + ContextError<&'a str>
+        + FromExternalError<&'a str, std::num::ParseIntError>
+        + std::fmt::Debug,
+>(
+    input: &'a str,
+) -> IResult<&'a str, Vec<DataModel<'a>>, E> {
+    let value = context(
+        "struct",
+        separated_pair(parse_str, spacer, parse_array),
+    )(input);
+
+    let value = value?;
+
+    Ok((value.0, value.1 .1))
+}
+
 fn parse_tuple_var<
     'a,
     E: ParseError<&'a str>
@@ -373,6 +393,8 @@ pub fn data_model<
 >(
     i: &'a str,
 ) -> IResult<&'a str, DataModel<'a>, E> {
+    dbg!(i);
+    println!("");
     preceded(
         spacer,
         alt((
@@ -386,6 +408,7 @@ pub fn data_model<
             map(parse_hash, DataModel::Map),
             map(parse_tuple_var, |x| x),
             map(parse_struct, DataModel::Map),
+            map(parse_named_array, DataModel::Vec),
             map(parse_wildcard, Into::into),
         )),
     )
@@ -859,5 +882,21 @@ mod tests {
             parse,
             DataModel::Map([("payment_methods", DataModel::Vec(vec![]))].into())
         )
+    }
+
+    #[test]
+    fn test_edge_case() {
+        let data = r#"PaymentsRequest { payment_id: Some(PaymentIntentId("pay_tf5WjPnA2ErXv1foocwA")), merchant_id: None, amount: None, routing: None, connector: Some([]), currency: None, capture_method: None, amount_to_capture: None, capture_on: None, confirm: Some(true), customer: None, customer_id: None, email: None, name: None, phone: None, phone_country_code: None, off_session: None, description: None, return_url: Some(Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("app.hyperswitch.io")), port: None, path: "/home", query: None, fragment: None }), setup_future_usage: None, authentication_type: None, payment_method_data: Some(BankTransfer(AchBankTransfer { billing_details: AchBillingDetails { email: Email(**************@gmail.com) } })), payment_method: Some(BankTransfer), payment_token: None, card_cvc: None, shipping: None, billing: None, statement_descriptor_name: None, statement_descriptor_suffix: None, order_details: None, client_secret: Some("pay_tf5WjPnA2ErXv1foocwA_secret_nmxdfPGZRIXvv7UKngMu"), mandate_data: None, mandate_id: None, browser_info: Some(Object {"color_depth": Number(30), "java_enabled": Bool(true), "java_script_enabled": Bool(true), "language": String("en-GB"), "screen_height": Number(900), "screen_width": Number(1440), "time_zone": Number(-330), "ip_address": String("103.159.11.202"), "accept_header": String("text\\/html,application\\/xhtml+xml,application\\/xml;q=0.9,image\\/webp,image\\/apng,*\\/*;q=0.8"), "user_agent": String("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36")}), payment_experience: None, payment_method_type: Some(Ach), business_country: None, business_label: None, merchant_connector_details: None, allowed_payment_method_types: None, business_sub_label: None, retry_action: None, metadata: None, connector_metadata: None, feature_metadata: None }"#;
+
+        let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
+        panic!("{:#?}", parse);
+    }
+
+    #[test]
+    fn test_edge_case2() {
+        let data = r#"PaymentsResponse { payment_id: Some("VND9P0YMT7S91EZF7NK2"), merchant_id: Some("reloadhero113"), status: Succeeded, amount: 370, amount_capturable: Some(0), amount_received: Some(370), connector: Some("trustpay"), client_secret: Some(*** alloc::string::String ***), created: Some(2023-09-21 9:42:47.856847), currency: "EUR", customer_id: Some("e064f3fe-a027-458a-a373-09eb38122b67"), description: None, refunds: None, disputes: None, attempts: None, captures: None, mandate_id: None, mandate_data: None, setup_future_usage: None, off_session: None, capture_on: None, capture_method: None, payment_method: None, payment_method_data: None, payment_token: Some("token_K1vASOnmHBh292RJExlQ"), shipping: None, billing: Some(Address { address: Some(AddressDetails { city: Some("Bengaluru"), country: Some(DE), line1: Some(*** alloc::string::String ***), line2: None, line3: None, zip: Some(*** alloc::string::String ***), state: None, first_name: Some(*** alloc::string::String ***), last_name: Some(*** alloc::string::String ***) }), phone: Some(PhoneDetails { number: None, country_code: None }) }), order_details: None, email: Some(Encryptable { inner: ****@test.com, encrypted: *** Encrypted 41 of bytes *** }), name: Some(Encryptable { inner: *** alloc::string::String ***, encrypted: *** Encrypted 37 of bytes *** }), phone: None, return_url: Some("http://localhost:3000/en/checkout/result"), authentication_type: Some(ThreeDs), statement_descriptor_name: None, statement_descriptor_suffix: None, next_action: None, cancellation_reason: None, error_code: None, error_message: None, payment_experience: None, payment_method_type: None, connector_label: None, business_country: None, business_label: None, business_sub_label: None, allowed_payment_method_types: Some(Array [String("credit"), String("debit"), String("crypto_currency"), String("apple_pay"), String("google_pay"), String("giropay")]), ephemeral_key: None, manual_retry_allowed: Some(false), connector_transaction_id: Some("pGbTn8clC7RASLMxnCWmUA"), frm_message: None, metadata: None, connector_metadata: None, feature_metadata: None, reference_id: None, profile_id: Some("pro_BOWTexIKYSXp2hhehu4a"), attempt_count: 1, merchant_decision: None }"#;
+
+        let parse = root::<(&str, ErrorKind)>(data).unwrap().1;
+        panic!("{:#?}", parse);
     }
 }
